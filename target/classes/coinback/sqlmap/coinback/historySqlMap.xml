@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="historySqlMap">
+
+	<insert id="insertPayHistory">
+       <![CDATA[
+			INSERT INTO TB_PAY_HISTORY ( ORG_NAME
+				  , BARCODE_NUM
+				  , AMOUNT
+				  , USE_YN
+				  , PAY_DTTM )
+			
+			VALUES ( #{orgName}
+				  , #{barcodeNum}
+				  , #{amount}
+				  , #{useYn}
+				  , SYSDATE() )
+	  ]]>
+	</insert>	
+	
+    <select id="selectUserInfoByBarcode" parameterType="String" resultType="com.lgcns.coinback.user.vo.UserVO">
+        <![CDATA[
+            SELECT
+                PHONE_NUM, BARCODE_NUM, BALANCE
+			FROM TB_USER
+			WHERE BARCODE_NUM=#{barcodeNum}
+        ]]>
+    </select>
+	
+	<select id="selectOrgList" resultType="com.lgcns.coinback.history.vo.HistoryVO">
+       <![CDATA[	
+			SELECT DISTINCT(ORG_NAME)
+	  		FROM TB_PAY_HISTORY
+  		]]>
+	</select>	
+	
+	<select id="selectPayHistoryByOrgName" resultType="com.lgcns.coinback.history.vo.HistoryVO">
+			SELECT  PAY_HISTORY_ID, ORG_NAME, BARCODE_NUM, AMOUNT, USE_YN, DATE_FORMAT(PAY_DTTM, '%Y-%m-%d %H:%i:%s') AS PAY_DTTM 
+			FROM TB_PAY_HISTORY
+			<where>
+				<if test="strtDt != ''">
+				  PAY_DTTM <![CDATA[ >= ]]> #{strtDt}
+				</if>
+				<if test="endDt != ''">
+				  AND PAY_DTTM <![CDATA[ <= ]]> #{endDt}
+				</if>
+				<if test="orgName != ''"> 
+				  AND ORG_NAME = #{orgName}
+				</if>  
+				<if test="barcodeNum != ''">  
+				  AND BARCODE_NUM = #{barcodeNum}
+				</if>
+			</where>
+			ORDER BY PAY_DTTM DESC
+	</select>	
+	
+	<select id="sumPayHistory" resultType="com.lgcns.coinback.history.vo.HistoryVO">
+		SELECT -1 PAY_HISTORY_ID, SUM(IF(USE_YN = 'N',AMOUNT,-1*AMOUNT)) AMOUNT FROM TB_PAY_HISTORY 
+		<where>
+			<if test="strtDt != ''">
+			  PAY_DTTM <![CDATA[ >= ]]> #{strtDt}
+			</if>
+			<if test="endDt != ''">
+			  AND PAY_DTTM <![CDATA[ <= ]]> #{endDt}
+			</if>		
+		</where>
+		<if test="orgName != ''"> 
+		GROUP BY ORG_NAME
+		</if> 
+		<if test="barcodeNum != ''">  
+		GROUP BY BARCODE_NUM
+		</if>
+		<if test="orgName != ''"> 
+		HAVING ORG_NAME = #{orgName}
+		</if> 	
+		<if test="barcodeNum != ''"> 
+		HAVING BARCODE_NUM = #{barcodeNum}
+		</if> 				
+	</select>
+	
+	<select id="selectPayHistoryByBarcode" resultType="com.lgcns.coinback.history.vo.HistoryVO">
+       <![CDATA[
+		SELECT PAY_HISTORY_ID, ORG_NAME, BARCODE_NUM, AMOUNT, USE_YN, DATE_FORMAT(PAY_DTTM, '%Y-%m-%d %H:%i:%s') AS PAY_DTTM FROM TB_PAY_HISTORY
+		WHERE 1 = 1 
+		AND BARCODE_NUM = #{barcodeNum}	
+		ORDER BY PAY_DTTM DESC	
+		]]>
+	</select>		
+	
+</mapper>

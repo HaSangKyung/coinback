@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="userSqlMap">
+	
+    <select id="selectUserInfo" resultType="com.lgcns.coinback.user.vo.UserVO">
+        <![CDATA[
+            SELECT
+                PHONE_NUM, BARCODE_NUM, BALANCE
+			FROM TB_USER
+			WHERE PHONE_NUM=#{phoneNum}
+        ]]>
+    </select>
+
+	<update id="updateBalance">
+		<![CDATA[
+			UPDATE TB_USER
+			SET BALANCE=#{changeBalance}
+			WHERE PHONE_NUM=#{phoneNum}
+		]]>
+	</update>   
+	
+</mapper>
